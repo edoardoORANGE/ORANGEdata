@@ -5,7 +5,7 @@ import ROOT as root
 choice = 'Cosmici' #'Cosmici' o 'self'
 nVolt = 410
 
-fileROOT = root.TFile('../PMTgem/'+choice+'PMTgem_'+str(nVolt)+'.root')#nome del rootfile
+fileROOT = root.TFile('../../Data/PMTgem/'+choice+'PMTgem_'+str(nVolt)+'.root')#nome del rootfile
 tree = fileROOT.Get("t1") #nome del datatree
 
 n = 1024
