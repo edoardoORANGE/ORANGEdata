@@ -2,8 +2,8 @@ import ROOT as root
 import numpy as np
 import matplotlib.pyplot as plt
 
-fileNumber = 380
-fileROOT = root.TFile('../../Data/PMTgem/selfPMTgemNew_' + str(fileNumber) + '.root')
+fileNumber = 420
+fileROOT = root.TFile('../../Data/PMTgem/CosmiciPMTgemNew_' + str(fileNumber) + '.root')
 tree = fileROOT.Get("t1") #nome del datatree
 
 n = 1024
