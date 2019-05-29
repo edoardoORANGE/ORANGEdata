@@ -2,15 +2,13 @@ import ROOT as root
 import numpy as np
 import matplotlib.pyplot as plt
 
-fileNumber = 490
-fileROOT = root.TFile('../../Data/PMTgem/prova_' + str(fileNumber) + '_1000eventi.root')
-tree = fileROOT.Get("t1") #nome del datatree
+fileROOT = root.TFile("../../../Data/scanEt_0.root")
+tree = fileROOT.Get("t1")
 
 n = 1024
 nDat = 4*n #numero dati per evento
 nEvts = tree.GetEntries() #numero di eventi
 
-#creo due array vuoti per salvare wave_array e time_array del .root
 
 wave = np.zeros((nEvts,nDat))
 time = np.zeros((nEvts,nDat))
@@ -50,16 +48,12 @@ for i in range(nEvts):
             waveCh4[i][j-3*n] = wave[i][j]
             timeCh4[i][j-3*n] = time[i][j]
 
+
+backgnd = np.zeros((nEvts , 100))
+
 for i in range(nEvts):
     waveCh4[i] = waveCh4[i]-np.mean(waveCh4[i][100:200])
-    
-for i in np.arange(1,nEvts):
-    plt.plot(timeCh4[i] , waveCh4[i])
-    plt.grid()
-    plt.xlabel('Time [ns]')
-    plt.ylabel('Voltage [mV]')
-    plt.title('Waveform no.%d con $\Delta V_{GEM}$ = %d V'%(i , fileNumber))
-    #plt.xlim(0,3)
-    plt.show()
-    #premere invio per proseguire, altro per concludere
-    if raw_input('INVIO -> proseguire\nQUALSIASI+INVIO -> chiudere\n') != '' : break 
+    backgnd[i] = waveCh4[i][100:200]
+
+
+plt.hist(backgnd)
