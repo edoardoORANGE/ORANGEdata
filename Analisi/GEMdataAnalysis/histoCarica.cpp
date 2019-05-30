@@ -10,6 +10,7 @@
 #include "TH2F.h"
 #include "TF1.h"
 #include "TStyle.h"
+#include "TString.h"
 
 
 using namespace std;
@@ -17,7 +18,8 @@ using namespace std;
 int main () {
 
   ifstream inputFile;
-  string filename = "histoCaricaNew490.dat";//"CosmiciPMTgemNew_390";
+  string number = "490";
+  string filename = "histoCarica"+number+".dat";//"CosmiciPMTgemNew_390";
   inputFile.open(filename);
 
   if(!inputFile) {
@@ -40,8 +42,11 @@ int main () {
 
 
   vector<double>::const_iterator max = max_element(gem.begin() , gem.end());
- 
-  TH1F h1("h1" , "Charge Histogram" 
+
+  TString histoName = "Charge Histogram with 2 GEM at "+
+    number + " V";
+  
+  TH1F h1("Histogram & Fit" , histoName
 	  , 3020 , -20 , 3000);
 
    TH2F h2("h2" , "" , 
@@ -69,7 +74,7 @@ int main () {
   total -> SetParLimits(4 , 5. , 100.);
   total -> SetParameter(5 , 20.);
 
-  total -> SetNpx(2000);
+  total -> SetNpx(10000);
   h1.Fit(total , "R");
 
   
@@ -79,15 +84,19 @@ int main () {
 
 
   h1.GetXaxis()->SetRangeUser(-20 , 200);
+  h1.SetXTitle("Charge [pC]");
+  h1.SetYTitle("Counts");
   h1.Draw();
   
   //h2.SetXTitle("verde+blu");
   //h2.GetXaxis() -> SetRangeUser(-10 , 500);
   //h2.GetYaxis() -> SetRangeUser(-10 , 500);
   //h2.Draw("colz");
- 
-  c1.SaveAs("histoCaricaNew_470.pdf");
-  
+
+  TString outName = "histoCarica_" + number + "+Fit.pdf";
+  c1.SaveAs(outName);
+
+  system("xdg-open " + outName);
 
   return 0;
 }
