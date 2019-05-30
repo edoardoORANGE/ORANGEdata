@@ -3,7 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 fileNumber = 490
-fileROOT = root.TFile('../../Data/PMTgem/prova_' + str(fileNumber) + '_1000eventi.root')
+fileROOT = root.TFile('../../Data/PMTgem/verticale_470.root')
+#prova_' + str(fileNumber) + '_1000eventi.root')
 tree = fileROOT.Get("t1") #nome del datatree
 
 n = 1024
