@@ -52,7 +52,7 @@ for i in range(nEvts):
             timeCh4[i][j-3*n] = time[i][j]
 
 for i in range(nEvts):
-    waveCh4[i] = waveCh4[i]-np.mean(waveCh4[i][100:200])
+    waveCh4[i] = waveCh4[i]#-np.mean(waveCh4[i][100:200])
     
 for i in np.arange(1,nEvts):
     plt.plot(timeCh4[i] , waveCh4[i])

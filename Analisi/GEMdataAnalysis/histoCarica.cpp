@@ -11,6 +11,7 @@
 #include "TF1.h"
 #include "TStyle.h"
 #include "TString.h"
+#include "TLatex.h"
 
 
 using namespace std;
@@ -19,7 +20,7 @@ int main () {
 
   ifstream inputFile;
   string number = "490";
-  string filename = "histoCarica"+number+".dat";//"CosmiciPMTgemNew_390";
+  string filename = "histoCaricaNew"+number+".dat";
   inputFile.open(filename);
 
   if(!inputFile) {
@@ -43,13 +44,13 @@ int main () {
 
   vector<double>::const_iterator max = max_element(gem.begin() , gem.end());
 
-  TString histoName = "Charge Histogram with 2 GEM at "+
+  TString histoName = "Charge Histogram with GEM 1 at 0 V and the others at "+
     number + " V";
   
   TH1F h1("Histogram & Fit" , histoName
-	  , 3020 , -20 , 3000);
+	  , 1220 , -20 , 3000);
 
-   TH2F h2("h2" , "" , 
+  TH2F h2("h2" , "" , 
 	  1208 , -20 , 3000 , //x set
 	  1208 , -20 , 3000); //y set
   
@@ -64,15 +65,18 @@ int main () {
   TCanvas c1("c1" , "" , 1024 , 800);
 
  
-  TF1 *total = new TF1("tot" , "gaus(0) + landau(3)" ,  -20  , *max);
+  TF1 *total = new TF1("tot" , "gaus(0) + landau(3)" ,  -20  , 3000);
   total -> SetParameter(0 , altezza);
   total -> SetParameter(1 , 0.);
   total -> SetParameter(2 , 3.);
 
-  total -> SetParameter(3 , altezza/2);  
+  total -> SetParameter(3 , altezza/2); 
+  //total -> SetParLimits(3 , 15. , altezza/5.3);
   total -> SetParameter(4 , 15.);
   total -> SetParLimits(4 , 5. , 100.);
   total -> SetParameter(5 , 20.);
+
+  total -> SetParNames("A_{G}", "#mu" , "#sigma_{G}" , "A_{L}" , "MPV" , "#sigma_{L}");
 
   total -> SetNpx(10000);
   h1.Fit(total , "R");
@@ -93,7 +97,7 @@ int main () {
   //h2.GetYaxis() -> SetRangeUser(-10 , 500);
   //h2.Draw("colz");
 
-  TString outName = "histoCarica_" + number + "+Fit.pdf";
+  TString outName = "histoCarica2GEM_" + number + "+Fit.pdf";
   c1.SaveAs(outName);
 
   system("xdg-open " + outName);
