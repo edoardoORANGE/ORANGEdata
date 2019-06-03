@@ -13,6 +13,7 @@
 #include "TLatex.h"
 #include "TGraphErrors.h"
 #include "TGraph.h"
+#include "TLegend.h"
 
 
 using namespace std;
@@ -26,23 +27,25 @@ int main () {
   //for(int number = 470 ; number <= 490 ; number+=10){
 
     ifstream inputFile;
+    ifstream inputFile2;
 
-    int number = 470;
+    int number = 380;
     string numberS = to_string(number);
 
     //./datasetFromAnalysis/
-    string filename = "./datasetFromAnalysis/histoCarica1G100_"+ numberS +".dat";
+    string filename = "histoCarica3G"+ numberS +".dat";
 
     //open the file...
     inputFile.open(filename);
     if(!inputFile) {
-      cerr << "Impossibile Leggere il file...."<< endl;
+      cerr << "Impossibile Leggere il file 1...."<< endl;
       exit(1);
     }
 
 
     std::vector<double> gem;
     std::vector<double> trigger;
+    std::vector<double> signal;
  
     //Read from file...
     while(!inputFile.eof()) {
@@ -53,48 +56,89 @@ int main () {
       trigger.push_back(pmtB+pmtV);    
     }
 
+    string filenameS = "histoCarica3GS"+ numberS +".dat";
+
+    //open the file...
+    inputFile2.open(filenameS);
+    if(!inputFile2) {
+      cerr << "Impossibile Leggere il file 2...."<< endl;
+      exit(1);
+    }
+
+    while(!inputFile2.eof()) {
+      double sig;
+      inputFile2 >> sig;
+      signal.push_back(sig);    
+    }
+
+
+    
+
+    
 
     vector<double>::const_iterator max = max_element(gem.begin() , gem.end());
 
-    TString histoName = "Charge Histogram with GEM 1 at 0 V and the others at "+
+    TString histoName = "Charge Histogram with 3 GEM at "+
       numberS + " V";
   
+    int nBins = 1520;
     TH1F h1("Histogram & Fit" , histoName
-	    , 1240 , -20 , 3000); //1220
+	    , nBins , -20 , 3000); //1220
 
+    TH1F h1S("Signal Histogram" , ""
+	    , nBins , -20 , 3000); //1220
 
-    TString histoName2 = "Vertical Configuration - Charge in Green PMT vs Charge in Blue PMT with 2 GEM at "+
+    
+
+    TString histoName2 = "Vertical Configuration - Charge in GEM's PMT vs Charge in Trigger's PMTs with 2 GEM at "+
       numberS + " V";
 
     TH2F h2("h2D" , histoName2 , 
-	    2020 , -20 , 3000 , //x set
-	    2020 , -20 , 3000); //y set
+	    3020 , -200 , 3000 , //x set
+	    3020 , -200 , 3000); //y set
   
     for(int i = 0 ; i < gem.size() ; i++){
-
       h2.Fill(trigger[i] , gem[i]);
       h1.Fill(gem[i]);
     }
+
+    for(int i = 0 ; i < signal.size() ; i++) {
+      h1S.Fill(signal[i]);
+     }
+  
+
   
     Double_t altezza = h1.GetMaximum();
-  
+    Double_t altezzaL = h1S.GetMaximum();
+
     TCanvas c1("c1" , "" , 1024 , 800);
  
+    TF1 *land = new TF1("landau" , "landau" ,  -20  , 3000);
     TF1 *total = new TF1("tot" , "gaus(0) + landau(3)" ,  -20  , 3000);
     total -> SetParameter(0 , altezza);
     total -> SetParameter(1 , 0.);
+    //total -> SetParLimits(1 , 0 , 1);
     total -> SetParameter(2 , 3.);
 
     total -> SetParameter(3 , altezza/2); 
     //total -> SetParLimits(3 , 15. , altezza/5.3);
-    total -> SetParameter(4 , 15.);
+    total -> SetParameter(4 , 30.);
     total -> SetParLimits(4 , 5. , 100.);
     total -> SetParameter(5 , 20.);
 
     total -> SetParNames("A_{G}", "#mu" , "#sigma_{G}" , "A_{L}" , "MPV" , "#sigma_{L}");
 
     total -> SetNpx(10000);
-    h1.Fit(total , "R");
+
+    //parametri della landau
+    land -> SetParameter(0 , altezzaL);
+    land -> SetParameter(1 , 10.);
+    total -> SetParLimits(1 , 5. , 100.);
+    land -> SetParameter(2 , 20);
+    land -> SetNpx(10000);
+
+    h1S.Fit(land , "R");
+    //h1.Fit(total , "R");
 
     mpv.push_back(Double_t(total -> GetParameter(4)));
     empv.push_back(total -> GetParError(4));
@@ -104,29 +148,40 @@ int main () {
 
     voltage.push_back(Int_t(number));
     evolt.push_back(0);
+    
 
+    
+    gStyle -> SetOptFit();
+    gStyle -> SetOptStat(0);
+    
+    h1S.SetLineColor(3);
+    
+    //h1S.SetStyleColor(kRed);
+    h1.GetXaxis()->SetRangeUser(-20 , 200);
+    h1S.GetXaxis()->SetRangeUser(-20 , 200);
+    h1.SetXTitle("Charge [pC]");
+    h1.SetYTitle("Counts");
+    h1.Draw();
+    h1S.Draw("SAME");
 
-  gStyle -> SetOptFit(1111);
-  //gStyle -> SetOptStat(1);
-
+    TLegend* legend = new TLegend(50 , 140 , 100 , 140);
+    //legend->SetHeader("");
+    legend->AddEntry(&h1 , "Total Histogram" , "f");
+    legend->AddEntry(&h1S , "Signal Histogram (filter at -30 mV)" , "f");
+    legend->AddEntry(land , "Fit of Signal Hist" , "l");
+    //legend->Draw();
+    
+ 
   
-  h1.GetXaxis()->SetRangeUser(-20 , 200);
-  h1.SetXTitle("Charge [pC]");
-  h1.SetYTitle("Counts");
-  h1.Draw();
+    /*
+    h2.SetYTitle("Charge GEM's PMT [pC]");
+    h2.SetXTitle("Charge Trigger PMTs [pC]");
   
-  
-  /*
-
-    h2.SetXTitle("Charge PMT Blue [pC]");
-    h2.SetYTitle("Charge PMT Green [pC]");
-  
-    h2.GetXaxis() -> SetRangeUser(0 , 120);
-    h2.GetYaxis() -> SetRangeUser(-10 , 120);
+    h2.GetXaxis() -> SetRangeUser(40 , 120);
+    h2.GetYaxis() -> SetRangeUser(-100 , 500);
 
     h2.Draw("colz");
-  */
-
+    */
  
 
   /*
@@ -134,15 +189,15 @@ int main () {
 		  &mpv[0] , 0 , &empv[0]);
   
   gr.SetMarkerStyle(21);
-  gr.Fit("pol1");
-  gr.Draw("AP");
+  //gr.Fit("pol1");
+  gr.Draw("P");
   */
 
 
   
   //Save the plot....
   
-  TString outName = "histoCarica2GEM_" + numberS + "+Fit.pdf";
+  TString outName = "histoCaricaSigAndTot_" + numberS + "+Fit.pdf";
   c1.SaveAs(outName);
 
   system("xdg-open " + outName);
