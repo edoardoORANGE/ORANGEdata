@@ -4,7 +4,6 @@
 
 #include <fstream>
 
-
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -27,13 +26,15 @@ int main () {
   //for(int number = 470 ; number <= 490 ; number+=10){
 
     ifstream inputFile;
+
     int number = 470;
     string numberS = to_string(number);
 
     //./datasetFromAnalysis/
     string filename = "./datasetFromAnalysis/histoCarica1G100_"+ numberS +".dat";
-    inputFile.open(filename);
 
+    //open the file...
+    inputFile.open(filename);
     if(!inputFile) {
       cerr << "Impossibile Leggere il file...."<< endl;
       exit(1);
@@ -43,7 +44,7 @@ int main () {
     std::vector<double> gem;
     std::vector<double> trigger;
  
-  
+    //Read from file...
     while(!inputFile.eof()) {
       double pmt , pmtB , pmtV;
       inputFile >> pmt 
@@ -137,10 +138,9 @@ int main () {
   gr.Draw("AP");
   */
 
-  
-
 
   
+  //Save the plot....
   
   TString outName = "histoCarica2GEM_" + numberS + "+Fit.pdf";
   c1.SaveAs(outName);
