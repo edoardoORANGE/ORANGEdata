@@ -29,11 +29,11 @@ int main () {
     ifstream inputFile;
     ifstream inputFile2;
 
-    int number = 380;
+    int number = 470;
     string numberS = to_string(number);
 
     //./datasetFromAnalysis/
-    string filename = "histoCarica3G"+ numberS +".dat";
+    string filename = "histoCaricaVerticale"+ numberS +".dat";
 
     //open the file...
     inputFile.open(filename);
@@ -56,7 +56,7 @@ int main () {
       trigger.push_back(pmtB+pmtV);    
     }
 
-    string filenameS = "histoCarica3GS"+ numberS +".dat";
+    string filenameS = "histoCaricaVerticaleS"+ numberS +".dat";
 
     //open the file...
     inputFile2.open(filenameS);
@@ -81,7 +81,7 @@ int main () {
     TString histoName = "Charge Histogram with 3 GEM at "+
       numberS + " V";
   
-    int nBins = 1520;
+    int nBins = 1020;
     TH1F h1("Histogram & Fit" , histoName
 	    , nBins , -20 , 3000); //1220
 
@@ -132,15 +132,17 @@ int main () {
 
     //parametri della landau
     land -> SetParameter(0 , altezzaL);
-    land -> SetParameter(1 , 10.);
-    total -> SetParLimits(1 , 5. , 100.);
+    //land -> SetParLimits(0 , 0 , 1000);
+    land -> SetParameter(1 , 5.);
+    land -> SetParLimits(1 , 5. , 30.);
     land -> SetParameter(2 , 20);
+    land -> SetParLimits(2 , 5. , 10.);
     land -> SetNpx(10000);
 
-    h1S.Fit(land , "R");
+    h1S.Fit(land , "R"  , "" , 0 , 200);
     //h1.Fit(total , "R");
 
-    mpv.push_back(Double_t(total -> GetParameter(4)));
+    /*mpv.push_back(Double_t(total -> GetParameter(4)));
     empv.push_back(total -> GetParError(4));
 
     mu.push_back(total -> GetParameter(1));
@@ -148,11 +150,11 @@ int main () {
 
     voltage.push_back(Int_t(number));
     evolt.push_back(0);
-    
+    */
 
     
-    gStyle -> SetOptFit();
-    gStyle -> SetOptStat(0);
+    gStyle -> SetOptFit(1111);
+    gStyle -> SetOptStat(1);
     
     h1S.SetLineColor(3);
     
@@ -164,7 +166,7 @@ int main () {
     h1.Draw();
     h1S.Draw("SAME");
 
-    TLegend* legend = new TLegend(50 , 140 , 100 , 140);
+    TLegend* legend = new TLegend(.6 , .6 , 1 , .4);
     //legend->SetHeader("");
     legend->AddEntry(&h1 , "Total Histogram" , "f");
     legend->AddEntry(&h1S , "Signal Histogram (filter at -30 mV)" , "f");
@@ -197,7 +199,7 @@ int main () {
   
   //Save the plot....
   
-  TString outName = "histoCaricaSigAndTot_" + numberS + "+Fit.pdf";
+  TString outName = "histoCaricaSigAndTot_" + numberS + "+Fit.root";
   c1.SaveAs(outName);
 
   system("xdg-open " + outName);

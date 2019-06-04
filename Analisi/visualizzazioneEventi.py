@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 fileNumber = 490
-fileROOT = root.TFile('../../Data/PMTgem/verticale_470.root')
+fileROOT = root.TFile('../../Data/PMTgem/verticaleNew_470.root')
 #prova_' + str(fileNumber) + '_1000eventi.root')
 tree = fileROOT.Get("t1") #nome del datatree
 
@@ -51,11 +51,20 @@ for i in range(nEvts):
             waveCh4[i][j-3*n] = wave[i][j]
             timeCh4[i][j-3*n] = time[i][j]
 
+waveTry = []
+timeTry = []
+
 for i in range(nEvts):
-    waveCh4[i] = waveCh4[i]#-np.mean(waveCh4[i][100:200])
-    
-for i in np.arange(1,nEvts):
-    plt.plot(timeCh4[i] , waveCh4[i])
+    #if min(waveCh4[i]) <= -50:
+     waveTry.append(waveCh4[i])#-np.mean(waveCh4[i][100:200])
+     timeTry.append(timeCh4[i])
+
+waveTry = np.array(waveTry)
+timeTry = np.array(timeTry)
+
+print(len(waveTry))
+for i in np.arange(1,len(waveTry)):
+    plt.plot(timeTry[i] , waveTry[i])
     plt.grid()
     plt.xlabel('Time [ns]')
     plt.ylabel('Voltage [mV]')
