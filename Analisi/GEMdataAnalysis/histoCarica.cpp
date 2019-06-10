@@ -14,168 +14,148 @@
 #include "TGraphErrors.h"
 #include "TGraph.h"
 #include "TLegend.h"
+#include "TMultiGraph.h"
 
 
 using namespace std;
 
 int main () {
 
-  std::vector<double> mpv , mu , empv , emu;
-  std::vector<double> voltage , evolt;
+  // std::vector<double> mpv2 , mu2 , empv2 , emu2 , mpv3 , mu3 , empv3 , emu3;
+  // std::vector<double> voltage;
   
   
-  //for(int number = 470 ; number <= 490 ; number+=10){
-
-    ifstream inputFile;
-    ifstream inputFile2;
-
-    int number = 470;
-    string numberS = to_string(number);
-
-    //./datasetFromAnalysis/
-    string filename = "histoCaricaVerticale"+ numberS +".dat";
-
-    //open the file...
-    inputFile.open(filename);
-    if(!inputFile) {
-      cerr << "Impossibile Leggere il file 1...."<< endl;
-      exit(1);
-    }
+  //  for(int nGem = 2 ; nGem <= 3 ; nGem++) {
+  //  for(int number = 380 ; number <= 420 ; number+=20){
 
 
-    std::vector<double> gem;
-    std::vector<double> trigger;
-    std::vector<double> signal;
+  ifstream inputFile;
+  ifstream inputFile2;
+
+  //string numberGEM = to_string(nGem);
+
+  string numberGEM = "1";
+  int number = 420;
+  string numberS = to_string(number);
+
+  //./datasetFromAnalysis/
+  string filename = "histoCarica"+ numberGEM + "G_"+ numberS +".dat";
+
+  //open the file...
+  inputFile.open(filename);
+  if(!inputFile) {
+    cerr << "Impossibile Leggere: " + filename +  " ...."<< endl;
+    exit(1);
+  }
+
+
+  std::vector<double> gem;
+  std::vector<double> trigger;
+  std::vector<double> signal;
  
-    //Read from file...
-    while(!inputFile.eof()) {
-      double pmt , pmtB , pmtV;
-      inputFile >> pmt 
-		>> pmtB >> pmtV;
-      gem.push_back(pmt);
-      trigger.push_back(pmtB+pmtV);    
-    }
+  //Read from file...
+  while(!inputFile.eof()) {
+    double pmt , pmtB , pmtV;
+    inputFile >> pmt
+	      >> pmtB >> pmtV;
+    gem.push_back(pmt);
+    trigger.push_back(pmtB+pmtV);    
+  }
 
-    string filenameS = "histoCaricaVerticaleS"+ numberS +".dat";
+  string filenameS = "histoCarica" + numberGEM + "G_S" + numberS + ".dat";
 
-    //open the file...
-    inputFile2.open(filenameS);
-    if(!inputFile2) {
-      cerr << "Impossibile Leggere il file 2...."<< endl;
-      exit(1);
-    }
+  //open the file...
+  inputFile2.open(filenameS);
+  if(!inputFile2) {
+    cerr << "Impossibile Leggere: " + filenameS + " ...."<< endl;
+    exit(1);
+  }
 
-    while(!inputFile2.eof()) {
-      double sig;
-      inputFile2 >> sig;
-      signal.push_back(sig);    
-    }
+  while(!inputFile2.eof()) {
+    double sig;
+    inputFile2 >> sig;
+    signal.push_back(sig);    
+  }
 
+
+  TCanvas c1("c1" , "" , 1024 , 800);
+
+  vector<double>::const_iterator max = max_element(gem.begin() , gem.end());
+
+  TString histoName = "Charge Histogram with "+numberGEM+" GEM at "+
+    numberS + " V";
+  
+  int nBins = 1220; //1120
+  int maxBin = 3000;
+  int minBin = -20;
+  TH1F h1("Histogram & Fit" , histoName
+	  , nBins , minBin , maxBin); //1220
+
+  TH1F h1S("Signal Histogram" , ""
+	   , nBins , minBin , maxBin); //1220
 
     
 
-    
+  TString histoName2 = "Vertical Configuration - Charge in GEM's PMT vs Charge in Trigger's PMTs with 2 GEM at "+
+    numberS + " V";
 
-    vector<double>::const_iterator max = max_element(gem.begin() , gem.end());
-
-    TString histoName = "Charge Histogram with 3 GEM at "+
-      numberS + " V";
+  TH2F h2("h2D" , histoName2 , 
+	  3020 , -200 , 3000 , //x set
+	  3020 , -200 , 3000); //y set
   
-    int nBins = 1020;
-    TH1F h1("Histogram & Fit" , histoName
-	    , nBins , -20 , 3000); //1220
+  for(int i = 0 ; i < gem.size() ; i++){
+    h2.Fill(trigger[i] , gem[i]);
+    h1.Fill(gem[i]);
+  }
 
-    TH1F h1S("Signal Histogram" , ""
-	    , nBins , -20 , 3000); //1220
-
-    
-
-    TString histoName2 = "Vertical Configuration - Charge in GEM's PMT vs Charge in Trigger's PMTs with 2 GEM at "+
-      numberS + " V";
-
-    TH2F h2("h2D" , histoName2 , 
-	    3020 , -200 , 3000 , //x set
-	    3020 , -200 , 3000); //y set
-  
-    for(int i = 0 ; i < gem.size() ; i++){
-      h2.Fill(trigger[i] , gem[i]);
-      h1.Fill(gem[i]);
-    }
-
-    for(int i = 0 ; i < signal.size() ; i++) {
-      h1S.Fill(signal[i]);
-     }
-  
+  for(int i = 0 ; i < signal.size() ; i++) {
+    h1S.Fill(signal[i]);
+  }
+   
 
   
-    Double_t altezza = h1.GetMaximum();
-    Double_t altezzaL = h1S.GetMaximum();
+  //Double_t altezza = h1.GetMaximum();
+  Double_t altezzaL = h1S.GetMaximum();
 
-    TCanvas c1("c1" , "" , 1024 , 800);
  
-    TF1 *land = new TF1("landau" , "landau" ,  -20  , 3000);
-    TF1 *total = new TF1("tot" , "gaus(0) + landau(3)" ,  -20  , 3000);
-    total -> SetParameter(0 , altezza);
-    total -> SetParameter(1 , 0.);
-    //total -> SetParLimits(1 , 0 , 1);
-    total -> SetParameter(2 , 3.);
+  TF1 *land = new TF1("landau" , "landau" ,  -20  , 3000);
+  //TF1 *total = new TF1("tot" , "gaus(0) + landau(3)" ,  -20  , 3000);
+    
+  land -> SetParNames("A_{L}", "MPV" , "#sigma_{L}");
+  //cout << altezza << endl;
 
-    total -> SetParameter(3 , altezza/2); 
-    //total -> SetParLimits(3 , 15. , altezza/5.3);
-    total -> SetParameter(4 , 30.);
-    total -> SetParLimits(4 , 5. , 100.);
-    total -> SetParameter(5 , 20.);
 
-    total -> SetParNames("A_{G}", "#mu" , "#sigma_{G}" , "A_{L}" , "MPV" , "#sigma_{L}");
+  //---------parametri della landau-----------
 
-    total -> SetNpx(10000);
+  land -> SetParameter(0 , altezzaL);
+  land -> SetParLimits(0 , 0 , 1000);
+  land -> SetParameter(1 , 5);
+  //land -> SetParLimits(1 , 0. , 30.);
+  land -> SetParameter(2 , 20.);
+  //land -> SetParLimits(2 , 5. , 10.);
+  land -> SetNpx(10000);
 
-    //parametri della landau
-    land -> SetParameter(0 , altezzaL);
-    //land -> SetParLimits(0 , 0 , 1000);
-    land -> SetParameter(1 , 5.);
-    land -> SetParLimits(1 , 5. , 30.);
-    land -> SetParameter(2 , 20);
-    land -> SetParLimits(2 , 5. , 10.);
-    land -> SetNpx(10000);
-
-    h1S.Fit(land , "R"  , "" , 0 , 200);
-    //h1.Fit(total , "R");
-
-    /*mpv.push_back(Double_t(total -> GetParameter(4)));
-    empv.push_back(total -> GetParError(4));
-
-    mu.push_back(total -> GetParameter(1));
-    emu.push_back(total ->GetParError(1));
-
-    voltage.push_back(Int_t(number));
-    evolt.push_back(0);
-    */
+  h1S.Fit(land , "R"  , "" , 0 , 30); //100
+  //h1.Fit(land , "R" , "" , 1 , 200);
 
     
-    gStyle -> SetOptFit(1111);
-    gStyle -> SetOptStat(1);
+  gStyle -> SetOptFit(1111);
+  gStyle -> SetOptStat(1);
+     
+   
+  h1S.SetLineColor(3);
+  h1.GetXaxis()->SetRangeUser(-20 , 500);
+  h1S.GetXaxis()->SetRangeUser(-20 , 500);
     
-    h1S.SetLineColor(3);
-    
-    //h1S.SetStyleColor(kRed);
-    h1.GetXaxis()->SetRangeUser(-20 , 200);
-    h1S.GetXaxis()->SetRangeUser(-20 , 200);
-    h1.SetXTitle("Charge [pC]");
-    h1.SetYTitle("Counts");
-    h1.Draw();
-    h1S.Draw("SAME");
+  h1.SetXTitle("Charge [pC]");
+  h1.SetYTitle("Counts");
 
-    TLegend* legend = new TLegend(.6 , .6 , 1 , .4);
-    //legend->SetHeader("");
-    legend->AddEntry(&h1 , "Total Histogram" , "f");
-    legend->AddEntry(&h1S , "Signal Histogram (filter at -30 mV)" , "f");
-    legend->AddEntry(land , "Fit of Signal Hist" , "l");
-    //legend->Draw();
-    
- 
+  //h1.Draw();
+  h1S.Draw();
+
+   
   
-    /*
+  /*
     h2.SetYTitle("Charge GEM's PMT [pC]");
     h2.SetXTitle("Charge Trigger PMTs [pC]");
   
@@ -183,26 +163,25 @@ int main () {
     h2.GetYaxis() -> SetRangeUser(-100 , 500);
 
     h2.Draw("colz");
-    */
+  */
  
-
-  /*
-  TGraphErrors gr(mpv.size() , &voltage[0] ,
-		  &mpv[0] , 0 , &empv[0]);
   
-  gr.SetMarkerStyle(21);
-  //gr.Fit("pol1");
-  gr.Draw("P");
+  /*
+  TLegend* legend = new TLegend(.1,.7,.3,.9);
+  //legend->SetHeader("");
+  legend->AddEntry(&gr2 , "MPV for 2 GEM" , "p");
+  legend->AddEntry(&gr3 , "MPV for 3 GEM" , "p");
+  //legend->AddEntry(land , "Fit of Signal Hist" , "l");
+  legend->Draw();
   */
 
 
-  
   //Save the plot....
-  
-  TString outName = "histoCaricaSigAndTot_" + numberS + "+Fit.root";
+    
+  TString outName = "histoCarica"+numberGEM+"G_" + numberS + "+Fit.png";
   c1.SaveAs(outName);
-
-  system("xdg-open " + outName);
-
+    
+  system("gio open " + outName);
+    
   return 0;
 }

@@ -2,8 +2,8 @@ import ROOT as root
 import numpy as np
 import matplotlib.pyplot as plt
 
-fileNumber = 490
-fileROOT = root.TFile('../../Data/PMTgem/verticaleNew_470.root')
+fileNumber = 420
+fileROOT = root.TFile('../../Data/PMTgem/1GEM/Cosmici1G_420.root') #PMTgem/verticaleNewEd1500_470.root')
 #prova_' + str(fileNumber) + '_1000eventi.root')
 tree = fileROOT.Get("t1") #nome del datatree
 
@@ -55,9 +55,9 @@ waveTry = []
 timeTry = []
 
 for i in range(nEvts):
-    #if min(waveCh4[i]) <= -50:
-     waveTry.append(waveCh4[i])#-np.mean(waveCh4[i][100:200])
-     timeTry.append(timeCh4[i])
+    if min(waveCh4[i]) <= -15:
+        waveTry.append((waveCh4[i]-np.mean(waveCh4[i][100:200]))/50)
+        timeTry.append(timeCh4[i])
 
 waveTry = np.array(waveTry)
 timeTry = np.array(timeTry)
