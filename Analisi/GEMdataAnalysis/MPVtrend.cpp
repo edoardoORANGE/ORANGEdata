@@ -41,14 +41,10 @@ int main () {
 	break;
 
       } else if(number == 380 && nGem == 1) {
-	number = 420;
+	number = 400;
       } else if (number == 440 && nGem == 1) {
 	number = 450; 
-      } else if(number == 470 && nGem == 1) {
-	number = 490;
-      } else if(number > 490 && nGem == 1 ) {
-	break;
-      }
+      } 
       
 
       ifstream inputFile;
@@ -114,13 +110,17 @@ int main () {
       TString histoName = "Charge Histogram with "+numberGEM+" GEM at "+
 	numberS + " V";
   
-      int nBins = 1220; //1120
+      int nBins; //1120
       int maxBin;
       if(nGem == 1) {
 	maxBin = 50;
 	nBins = 30;
-      } else {
-	maxBin = 1220;
+      } else if(nGem == 2){
+	nBins = 1120;
+	maxBin = 3000;
+      } else if(nGem == 3) {
+	nBins = 3020;
+	maxBin = 3000;
       }
      
       TH1F h1("Histogram & Fit" , histoName
@@ -149,7 +149,7 @@ int main () {
    
 
   
-      //Double_t altezza = h1.GetMaximum();
+      Double_t altezza = h1.GetMaximum();
       Double_t altezzaL = h1S.GetMaximum();
 
       int nMax = 500;
@@ -177,10 +177,26 @@ int main () {
       //land -> SetParLimits(2 , 5. , 10.);
       land -> SetNpx(10000);
 
-      h1S.Fit(land , "R"  , "" , 0 , 100); //100
+      TF1 *total = new TF1("tot" , "gaus(0) + landau(3)" ,  -20  , 3000);
+      total -> SetNpx(10000);
+
+      total -> SetParameter(0 , altezza);
+      total -> SetParameter(1 , 2);
+      total -> SetParameter(2 , 5);
+  
+      total -> SetParameter(3 , altezzaL);
+      total -> SetParameter(4 , 15);
+      //h1.Fit(total , "R" , "" , -20 , 100);
+  
+
+      
+
+      //  h1S.Fit(land , "R"  , "" , 0 , 100); //100
       //h1.Fit(land , "R" , "" , 1 , 200);
 
       if(nGem == 2){
+	h1S.Fit(land , "R"  , "" , 0 , 100); //100
+
 	mpv2.push_back(Double_t(land -> GetParameter(1)));
 	empv2.push_back(land -> GetParError(1));
       
@@ -188,13 +204,19 @@ int main () {
 	//	emu.push_back(total ->GetParError(1));
       
 	voltage.push_back(Int_t(number));
-      }else if(nGem == 3) {
-	mpv3.push_back(Double_t(land -> GetParameter(1)));
-	empv3.push_back(land -> GetParError(1));
+      }else if(nGem == 3) {  
+	h1.Fit(total , "R" , "" , -20 , 100);
+  
+	mpv3.push_back(Double_t(total -> GetParameter(4)));
+	empv3.push_back(total -> GetParError(4));
 	
 	mu3.push_back(land -> GetParameter(1));
 	//	emu.push_back(total ->GetParError(1));	
+
+
       } else if(nGem == 1) {
+	h1S.Fit(land , "R"  , "" , 0 , 100); //100
+
 	mpv1.push_back(Double_t(land -> GetParameter(1)));
 	empv1.push_back(land -> GetParError(1));
 	
@@ -245,8 +267,8 @@ int main () {
     
 
   for(int i = 0 ; i < mpv3.size() ; i++) {
-    mpv3[i] = mpv3[i]*5.3333;
-    empv3[i] = empv3[i]*5.3333;
+    mpv3[i] = mpv3[i];
+    empv3[i] = empv3[i];
   }
 
   TGraphErrors gr3(mpv3.size() , &voltage[0] ,
@@ -267,14 +289,14 @@ int main () {
     
   c1.SetGrid();
 
-  mg -> SetTitle("MPV Trend with 2 GEM");
+  mg -> SetTitle("MPV Trend with 1/2 GEM");
   mg -> GetYaxis() -> SetTitle("MPV [pC]");
   mg -> GetXaxis() -> SetTitle("Voltage [V]") ;
   mg -> GetXaxis() -> SetLimits(370,500);
   mg -> GetYaxis() -> SetLimits(2,25);
   mg -> Add(&gr2 , "p");
-  //mg -> Add(&gr3 , "p");
-  mg -> Add(&gr1 , "p");
+  mg -> Add(&gr3 , "p");
+  //mg -> Add(&gr1 , "p");
   mg -> Draw("aPC");
     
 
@@ -287,7 +309,7 @@ int main () {
     
   //Save the plot....
     
-  TString outName = "MPVtrend2.png"; 
+  TString outName = "MPVtrend1_2.png"; 
   //"histoCarica"+numberGEM+"G_" + numberS + "+Fit.png";
   
   c1.SaveAs(outName);
