@@ -35,8 +35,8 @@ int main () {
 
   //string numberGEM = to_string(nGem);
 
-  string numberGEM = "3";
-  int number = 420;
+  string numberGEM = "2";
+  int number = 480;
   string numberS = to_string(number);
 
   //./datasetFromAnalysis/
@@ -169,7 +169,7 @@ int main () {
 
   //---------parametri della landau-----------
 
-  /* land -> SetParameter(0 , altezzaL);
+  land -> SetParameter(0 , altezzaL);
   land -> SetParLimits(0 , 0 , 1000);
   land -> SetParameter(1 , 15);
   land -> SetParLimits(1 , 0. , 30.);
@@ -180,8 +180,9 @@ int main () {
   h1S.Fit(land , "R"  , "" , 0 , 100); //100
   //h1.Fit(land , "R" , "" , 1 , 200);
   
-  */
   
+  
+  /*
   total -> SetNpx(10000);
 
   total -> SetParameter(0 , altezza);
@@ -190,8 +191,9 @@ int main () {
   
   total -> SetParameter(3 , altezza/3);
   total -> SetParameter(4 , 20);
-  h1.Fit(total , "R" , "" , -20 , 100);
-  
+  total -> SetParLimits(4 , 0. , 40.);
+  h1.Fit(total , "R" , "" , -5 , 100);
+  */
 
   gStyle -> SetOptFit(1111);
   gStyle -> SetOptStat(1);
@@ -199,14 +201,14 @@ int main () {
   //gPad -> SetLogy();
    
   h1S.SetLineColor(3);
-  h1.GetXaxis()->SetRangeUser(-20 , 100);
+  h1.GetXaxis()->SetRangeUser(-20 , 150);
   //h1S.GetXaxis()->SetRangeUser(-20 , 50);
     
   h1.SetXTitle("Charge [pC]");
   h1.SetYTitle("Counts");
 
   h1.Draw();
-  // h1S.Draw("same");
+  h1S.Draw("same");
   
   
 

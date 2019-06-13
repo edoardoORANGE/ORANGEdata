@@ -2,7 +2,7 @@ import ROOT as root
 import numpy as np
 import matplotlib.pyplot as plt
 
-fileNumber = 400
+fileNumber = 450
 fileROOT = root.TFile('../../Data/PMTgem/3GEMnew/Cosmici3G_'+str(fileNumber)+'.root') #PMTgem/verticaleNewEd1500_470.root')
 #prova_' + str(fileNumber) + '_1000eventi.root')
 tree = fileROOT.Get("t1") #nome del datatree
