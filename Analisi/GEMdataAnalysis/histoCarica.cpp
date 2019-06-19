@@ -35,12 +35,23 @@ int main () {
 
   //string numberGEM = to_string(nGem);
 
+
+  //-----------OPZIONI OBBLIGATORIE----------
   string numberGEM = "2";
-  int number = 480;
+  int number = 470;
   string numberS = to_string(number);
+  TString out = ".png"; //.png o .root
 
   //./datasetFromAnalysis/
-  string filename = "histoCarica"+ numberGEM + "G_"+ numberS +".dat";
+  string cc = ""; //"Old" o ""
+
+  string filename = "histoCaricaVerticale" + cc + numberGEM + "G_"+ numberS +".dat";
+
+  int nBins = 2220; //3020 , 1220 ,
+  int maxBin = 3000;
+  int minBin = -20;
+
+  //-----------INIZIO PROGRAMMA-------------
 
   //open the file...
   inputFile.open(filename);
@@ -76,7 +87,7 @@ int main () {
     trigger.push_back(pmtB+pmtV);    
   }
 
-  string filenameS = "histoCarica" + numberGEM + "G_S" + numberS + ".dat";
+  string filenameS = "histoCarica" + cc + numberGEM + "G_S" + numberS + ".dat";
 
   //open the file...
   inputFile2.open(filenameS);
@@ -98,9 +109,7 @@ int main () {
   TString histoName = "Charge Histogram with "+numberGEM+" GEM at "+
     numberS + " V";
   
-  int nBins = 3020; //3020 , 1220 ,
-  int maxBin = 3000;
-  int minBin = -20;
+  
   TH1F h1("Histogram & Fit" , histoName
 	  , nBins , minBin , maxBin); //1220
 
@@ -164,36 +173,38 @@ int main () {
   TF1 *total = new TF1("tot" , "gaus(0) + landau(3)" ,  -20  , 3000);
     
   land -> SetParNames("A_{L}", "MPV" , "#sigma_{L}");
+  total -> SetParNames("A_{G}" , "#mu_{G}" , "#sigma_{G}" , "A_{L}", "MPV" , "#sigma_{L}");
   //cout << altezza << endl;
 
 
   //---------parametri della landau-----------
 
+  
+
+  /*
   land -> SetParameter(0 , altezzaL);
   land -> SetParLimits(0 , 0 , 1000);
-  land -> SetParameter(1 , 15);
+  land -> FixParameter(1 , 14);
   land -> SetParLimits(1 , 0. , 30.);
   land -> SetParameter(2 , 20.);
-  //land -> SetParLimits(2 , 5. , 10.);
+  land -> SetParLimits(2 , 5. , 10.);
   land -> SetNpx(10000);
 
-  h1S.Fit(land , "R"  , "" , 0 , 100); //100
-  //h1.Fit(land , "R" , "" , 1 , 200);
+  h1S.Fit(land , "R"  , "" , -5 , 80); //100
+  */
   
   
-  
-  /*
   total -> SetNpx(10000);
 
   total -> SetParameter(0 , altezza);
-  total -> SetParameter(1 , 2);
+  total -> SetParameter(1 , 0);
   total -> SetParameter(2 , 5);
   
   total -> SetParameter(3 , altezza/3);
-  total -> SetParameter(4 , 20);
+  total -> SetParameter(4 , 10 );
   total -> SetParLimits(4 , 0. , 40.);
-  h1.Fit(total , "R" , "" , -5 , 100);
-  */
+  h1.Fit(total , "R" , "" , -10 , 100);
+  
 
   gStyle -> SetOptFit(1111);
   gStyle -> SetOptStat(1);
@@ -201,14 +212,14 @@ int main () {
   //gPad -> SetLogy();
    
   h1S.SetLineColor(3);
-  h1.GetXaxis()->SetRangeUser(-20 , 150);
-  //h1S.GetXaxis()->SetRangeUser(-20 , 50);
+  h1.GetXaxis()->SetRangeUser(-20 , 100);
+  h1S.GetXaxis()->SetRangeUser(-20 , 100);
     
   h1.SetXTitle("Charge [pC]");
   h1.SetYTitle("Counts");
 
   h1.Draw();
-  h1S.Draw("same");
+  // h1S.Draw("same");
   
   
 
@@ -245,7 +256,7 @@ int main () {
 
   //Save the plot....
     
-  TString outName = "histoCarica"+numberGEM+"G_" + numberS + "+Fit.png";
+  TString outName = "histoCaricaVerticale"+cc+numberGEM+"G_" + numberS + "+Fit"+ out;
   c1.SaveAs(outName);
  
   system("gio open " + outName);

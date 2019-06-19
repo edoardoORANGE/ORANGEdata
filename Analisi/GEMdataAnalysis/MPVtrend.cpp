@@ -21,11 +21,13 @@ using namespace std;
 
 int main () {
 
+  string cc = "Old";
+
   std::vector<double> mpv2 , mu2 , empv2 , emu2 , mpv3 , mu3 , empv3 , emu3 , mpv1 , mu1 , empv1 , emu1;
   std::vector<double> voltage , voltage1;
   
   
-  for(int nGem = 1 ; nGem <= 3 ; nGem++) {
+  for(int nGem = 2 ; nGem <= 3 ; nGem++) {
     for(int number = 380 ; number <= 500 ; number+=20){
       int k = 0;
 
@@ -56,7 +58,7 @@ int main () {
       string numberS = to_string(number);
 
       //./datasetFromAnalysis/
-      string filename = "histoCarica"+ numberGEM + "G_"+ numberS +".dat";
+      string filename = "histoCarica"+cc+ numberGEM + "G_"+ numberS +".dat";
 
       //open the file...
       inputFile.open(filename);
@@ -83,7 +85,7 @@ int main () {
 	trigger.push_back(pmtB+pmtV);    
       }
 
-      string filenameS = "histoCarica" + numberGEM + "G_S" + numberS + ".dat";
+      string filenameS = "histoCarica"+ cc + numberGEM + "G_S" + numberS + ".dat";
 
       //open the file...
       inputFile2.open(filenameS);
@@ -304,12 +306,12 @@ int main () {
   //legend->SetHeader("");
   legend -> AddEntry(&gr2 , "MPV for 2 GEM" , "p");
   legend -> AddEntry(&gr3 , "MPV for 3 GEM" , "p");
-  legend -> AddEntry(&gr1 , "MPV for 1 GEM" , "p");
+  //legend -> AddEntry(&gr1 , "MPV for 1 GEM" , "p");
   //legend -> Draw();
     
   //Save the plot....
     
-  TString outName = "MPVtrend1_2.png"; 
+  TString outName = "MPVtrend2_3.png"; 
   //"histoCarica"+numberGEM+"G_" + numberS + "+Fit.png";
   
   c1.SaveAs(outName);

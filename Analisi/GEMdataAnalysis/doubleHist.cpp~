@@ -1,0 +1,257 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+#include <fstream>
+
+#include "TCanvas.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TF1.h"
+#include "TStyle.h"
+#include "TString.h"
+#include "TLatex.h"
+#include "TGraphErrors.h"
+#include "TGraph.h"
+#include "TLegend.h"
+#include "TMultiGraph.h"
+#include "TPad.h"
+
+
+using namespace std;
+
+int main () {
+
+
+  ifstream inputFileOld;
+  ifstream inputFileNew;
+  //ifstream inputFile2;
+
+  //string numberGEM = to_string(nGem);
+
+
+  //-----------OPZIONI OBBLIGATORIE----------
+  string numberGEM = "3";
+  int number = 380;
+  string numberS = to_string(number);
+  TString out = ".png"; //.png o .root
+
+  //./datasetFromAnalysis/
+  //string cc = ""; //"Old" o ""
+
+  string filename = "histoCarica" + numberGEM + "G_"+ numberS +".dat";
+  
+  string filenameOld = "histoCaricaOld" + numberGEM + "G_"+ numberS +".dat";
+ 
+  //-----------INIZIO PROGRAMMA-------------
+
+  //open the file...
+  inputFileOld.open(filename);
+  if(!inputFile) {
+    cerr << "Impossibile Leggere: " + filename +  " ...."<< endl;
+    exit(1);
+  }
+
+
+  std::vector<double> gem;
+  std::vector<double> trigger;
+  std::vector<double> signal;
+ 
+  //Read from file...
+  while(!inputFile.eof()) {
+    double pmt , pmtB , pmtV;
+    inputFile >> pmt
+	      >> pmtB >> pmtV;
+
+    /*if(nGem == 1) {
+      caricaBlu1.push_back(pmtB);
+      caricaVerde1.push_back(pmtV);
+    } else if(nGem == 2) {
+      caricaBlu2.push_back(pmtB);
+      caricaVerde2.push_back(pmtV);
+
+      gem.push_back(pmtV);
+      trigger.push_back(pmtB);
+      }*/
+
+
+    gem.push_back(pmt);
+    trigger.push_back(pmtB+pmtV);    
+  }
+
+  string filenameS = "histoCarica" + cc + numberGEM + "G_S" + numberS + ".dat";
+
+  //open the file...
+  inputFile2.open(filenameS);
+  if(!inputFile2) {
+    cerr << "Impossibile Leggere: " + filenameS + " ...."<< endl;
+    exit(1);
+  }
+
+  while(!inputFile2.eof()) {
+    double sig;
+    inputFile2 >> sig;
+    signal.push_back(sig);    
+  }
+
+  
+ 
+  vector<double>::const_iterator max = max_element(gem.begin() , gem.end());
+
+  TString histoName = "Charge Histogram with "+numberGEM+" GEM at "+
+    numberS + " V";
+  
+  int nBins = 3020; //3020 , 1220 ,
+  int maxBin = 3000;
+  int minBin = -20;
+  TH1F h1("Histogram & Fit" , histoName
+	  , nBins , minBin , maxBin); //1220
+
+  TH1F h1S("Signal Histogram" , ""
+	   , nBins , minBin , maxBin); //1220
+
+  TCanvas c1("c1" , "" , 1024 , 800);
+
+  TString histoName2 = "Vertical Configuration - Charge in GEM's PMT vs Charge in Trigger's PMTs with"+ numberGEM + " GEM at "+
+    numberS + " V";
+
+  TH2F h2("h2D" , histoName2 , 
+	  3020 , -200 , 3000 , //x set
+	  3020 , -200 , 3000); //y set
+
+  
+  /* TH1F hBlu1("hBlu" , "Histogramma di Carica PMT Blu1" , 
+	    3200 , -200 , 3000);
+  TH1F hVerde1("hVerde" , "Histogramma di Carica PMT Verde1" , 
+	      3200 , -200 , 3000);
+  TH1F hBlu2("hBlu" , "Histogramma di Carica PMT Blu2" , 
+	    3200 , -200 , 3000);
+  TH1F hVerde2("hVerde" , "Histogramma di Carica PMT Verde2" , 
+	      3200 , -200 , 3000);
+
+
+  for(int i = 0 ; i < caricaBlu1.size() ; i++) {
+      hBlu1.Fill(caricaBlu1[i]);
+  }
+  for(int i = 0 ; i < caricaVerde1.size() ; i++) {
+      hVerde1.Fill(caricaVerde1[i]);
+  }
+  for(int i = 0 ; i < caricaBlu2.size() ; i++) {
+
+      hBlu2.Fill(caricaBlu2[i]);
+  }
+  for(int i = 0 ; i < caricaVerde2.size() ; i++) {
+
+    hVerde2.Fill(caricaVerde2[i]);
+  }
+
+  */
+  
+  
+  for(int i = 0 ; i < gem.size() ; i++){
+    h2.Fill(trigger[i] , gem[i]);
+    h1.Fill(gem[i]);
+  }
+  
+  for(int i = 0 ; i < signal.size() ; i++) {
+    h1S.Fill(signal[i]);
+  }
+ 
+
+  
+  Double_t altezza = h1.GetMaximum();
+  Double_t altezzaL = h1S.GetMaximum();
+
+ 
+  TF1 *land = new TF1("landau" , "landau" ,  -20  , 3000);
+  TF1 *total = new TF1("tot" , "gaus(0) + landau(3)" ,  -20  , 3000);
+    
+  land -> SetParNames("A_{L}", "MPV" , "#sigma_{L}");
+  //cout << altezza << endl;
+
+
+  //---------parametri della landau-----------
+
+  
+  land -> SetParameter(0 , altezzaL);
+  land -> SetParLimits(0 , 0 , 1000);
+  land -> SetParameter(1 , 15);
+  land -> SetParLimits(1 , 0. , 30.);
+  land -> SetParameter(2 , 20.);
+  //land -> SetParLimits(2 , 5. , 10.);
+  land -> SetNpx(10000);
+
+  h1S.Fit(land , "R"  , "" , 0 , 100); //100
+  
+  
+  
+  /*
+  total -> SetNpx(10000);
+
+  total -> SetParameter(0 , altezza);
+  total -> SetParameter(1 , 2);
+  total -> SetParameter(2 , 5);
+  
+  total -> SetParameter(3 , altezza/3);
+  total -> SetParameter(4 , 20);
+  total -> SetParLimits(4 , 0. , 40.);
+  h1.Fit(total , "R" , "" , -5 , 100);
+  */
+
+  gStyle -> SetOptFit(1111);
+  gStyle -> SetOptStat(1);
+  
+  //gPad -> SetLogy();
+   
+  h1S.SetLineColor(3);
+  h1.GetXaxis()->SetRangeUser(-20 , 100);
+  h1S.GetXaxis()->SetRangeUser(-20 , 100);
+    
+  h1.SetXTitle("Charge [pC]");
+  h1.SetYTitle("Counts");
+
+  h1.Draw();
+  h1S.Draw("same");
+  
+  
+
+   
+  /*
+    
+    h2.SetYTitle("Charge GEM's PMT [pC]");
+    h2.SetXTitle("Charge Trigger PMTs [pC]");
+  
+    h2.GetXaxis() -> SetRangeUser(0 , 200);
+    h2.GetYaxis() -> SetRangeUser(0 , 200);
+
+    h2.Draw("colz");
+  */
+ 
+
+  /*
+  hVerde2.SetLineColor(2);
+  hVerde1.GetXaxis() -> SetRangeUser(0 , 200);
+  hVerde2.GetXaxis() -> SetRangeUser(0 , 200);
+  hVerde1.GetYaxis() -> SetRangeUser(0 , 100);
+  hVerde1.Draw();
+  hVerde2.Draw("same");
+  */
+  /*
+  TLegend* legend = new TLegend(.1,.7,.3,.9);
+  //legend->SetHeader("");
+  legend->AddEntry(&gr2 , "MPV for 2 GEM" , "p");
+  legend->AddEntry(&gr3 , "MPV for 3 GEM" , "p");
+  //legend->AddEntry(land , "Fit of Signal Hist" , "l");
+  legend->Draw();
+  */
+
+
+  //Save the plot....
+    
+  TString outName = "histoCarica"+cc+numberGEM+"G_" + numberS + "+Fit"+ out;
+  c1.SaveAs(outName);
+ 
+  system("gio open " + outName);
+  
+  return 0;
+}
